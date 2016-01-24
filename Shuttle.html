@@ -1,0 +1,80 @@
+<html>
+<head>
+   <title>Avissawella Shuttle</title>
+    <meta charset="utf-8" />
+    <script type="text/javascript" src="http://ecn.dev.virtualearth.net/mapcontrol/mapcontrol.ashx?v=7.0"></script> 
+
+<script>
+	var map = null;
+	
+	function start() 
+	{
+		setTimeout(function()
+		{
+			fetch();
+		}, 500);
+	}
+	
+	function fetch()
+	{
+		httpGetAsync("https://data.sparkfun.com/output/g6LjpEKYGLHYo88zvKR6/latest", onLocationReceive);
+		setTimeout(fetch, 5000);
+	}
+	
+	function onLocationReceive(latest)
+	{
+		var res = latest.split('"');
+		if (res.length < 2)
+			return;
+		
+		var coords = res[1].split(",");
+		if (coords.length < 2)
+			return;
+		
+        var lat = parseFloat(coords[0]);
+        var lon = parseFloat(coords[1]);
+		//alert("" + lat + "," + lon);
+		
+		if (map == null)
+		{
+			var cred = "AgWr8RK313_Rzdkdp82jBt5ewHXjagzL748PssnnME9qtHjoCvwLQWOTR97SihGF"; 
+			map = new Microsoft.Maps.Map(document.getElementById("mapDiv"), { credentials: cred }); 
+		
+			var userLocation = new Microsoft.Maps.Location(lat, lon);
+			map.setView({ center: userLocation, zoom: 15 });
+		}
+		
+		var locs = new Array(); 
+		locs.push(new Microsoft.Maps.Location(lat, lon - 0.000125)); 
+		locs.push(new Microsoft.Maps.Location(lat - 0.0001, lon - 0.0001)); 
+		locs.push(new Microsoft.Maps.Location(lat - 0.000125, lon)); 
+		locs.push(new Microsoft.Maps.Location(lat - 0.0001, lon + 0.0001)); 
+		locs.push(new Microsoft.Maps.Location(lat, lon + 0.000125)); 
+		locs.push(new Microsoft.Maps.Location(lat + 0.0001, lon + 0.0001)); 
+		locs.push(new Microsoft.Maps.Location(lat + 0.000125, lon)); 
+		locs.push(new Microsoft.Maps.Location(lat + 0.0001, lon - 0.0001)); 
+		locs.push(new Microsoft.Maps.Location(lat, lon - 0.000125)); 
+		
+		var locationArea = new Microsoft.Maps.Polygon(locs, { fillColor: new Microsoft.Maps.Color(100, 255, 100, 100), strokeColor: new Microsoft.Maps.Color(255, 255, 0, 0) });
+		map.entities.clear();
+		map.entities.push(locationArea);
+	}
+	
+	function httpGetAsync(theUrl, callback)
+	{
+		var xmlHttp = new XMLHttpRequest();
+		xmlHttp.onreadystatechange = function() { 
+			if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
+				callback(xmlHttp.responseText);
+		}
+		xmlHttp.open("GET", theUrl, true); // true for asynchronous 
+		xmlHttp.send(null);
+	}
+	
+</script>
+</head>
+<body onload="start()">
+  <div id="mapDiv" style="position: relative; width: 100%; height: 100%;"></div> 
+  <!--div id="mapDiv" style="position: relative; width: 400px; height: 400px;"></div--> 
+</body>
+</html>
